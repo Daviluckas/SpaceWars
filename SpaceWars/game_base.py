@@ -89,6 +89,40 @@ class RoboZigueZague(Robo):
         if self.rect.y > ALTURA:
             self.kill()
 
+# ROBO GIRO 
+class Robogiro(Robo):
+    def __init__(self, x, y):
+        super().__init__(x, y, velocidade=2)
+
+        # ângulo do círculo
+        self.angulo = 0
+
+        # raio do círculo
+        self.raio = 40
+
+        # centro do círculo (caminha pra baixo)
+        self.cx = x
+        self.cy = y
+
+    def atualizar_posicao(self):
+        import math
+
+        # centro desce devagar
+        self.cy += self.velocidade
+
+        # aumenta o ângulo para girar o círculo
+        self.angulo += 0.1  # velocidade do giro
+
+        # nova posição circular
+        self.rect.x = self.cx + math.cos(self.angulo) * self.raio
+        self.rect.y = self.cy + math.sin(self.angulo) * self.raio
+
+    def update(self):
+        self.atualizar_posicao()
+
+        # se sair da tela, remove
+        if self.rect.y > ALTURA + 50:
+            self.kill()
 
 todos_sprites = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
@@ -116,8 +150,14 @@ while rodando:
 
     # timer de entrada dos inimigos
     spawn_timer += 1
+    
     if spawn_timer > 40:
-        robo = RoboZigueZague(random.randint(40, LARGURA - 40), -40)
+        # 50% chance de cada tipo
+        if random.random() < 0.5:
+            robo = RoboZigueZague(random.randint(40, LARGURA - 40), -40)
+        else:
+            robo = Robogiro(random.randint(40, LARGURA - 40), -40)
+
         todos_sprites.add(robo)
         inimigos.add(robo)
         spawn_timer = 0
