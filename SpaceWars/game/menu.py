@@ -60,14 +60,14 @@ class Menu:
         try:
             # Tenta carregar o arquivo "fonte.ttf" com tamanho 25
             # Se o arquivo se chamar apenas "fonte" sem .ttf, mude para "fonte"
-            self.btn_font = pygame.font.Font("fonte.ttf", 25) 
+            self.btn_font = pygame.font.Font("SpaceWars/game/fonte.ttf", 25) 
         except pygame.error:
             print("Aviso: Arquivo 'fonte.ttf' não encontrado. Usando fonte padrão.")
             self.btn_font = pygame.font.SysFont('consolas', 28, bold=True)
 
         # --- Background ---
         try:
-            self.background = pygame.image.load("background.jpg").convert()
+            self.background = pygame.image.load("SpaceWars/game/background.jpg").convert()
             self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
             self.has_bg_image = True
         except pygame.error:
