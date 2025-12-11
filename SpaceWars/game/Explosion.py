@@ -1,11 +1,11 @@
 import pygame
 import time
 pygame.init()
-Explosion_sound = pygame.mixer.Sound("SpaceWars/Sounds/Explosion-Song.wav")
+Explosion_sound = pygame.mixer.Sound("SpaceWars/game/Sounds/Explosion-Song.wav")
 class Explosao:
     def __init__(self, position):
         self.frames = [
-            pygame.image.load(f"SpaceWars/spritesBase/exp/explosion{i}.png").convert_alpha() 
+            pygame.image.load(f"SpaceWars/game/sprites/exp/explosion{i}.png").convert_alpha() 
             for i in range(1, 6)
         ]
         self.index = 0
