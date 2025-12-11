@@ -1,20 +1,11 @@
 import pygame
 import time
-import os
 pygame.init()
-
-# Pega a pasta onde ESTE arquivo (Explosion.py) está
-current_dir = os.path.dirname(__file__)
-# Monta o caminho exato para o som
-sound_path = os.path.join(current_dir, "Sounds", "Explosion-Song.wav")
-
-Explosion_sound = pygame.mixer.Sound(sound_path)
 Explosion_sound = pygame.mixer.Sound("SpaceWars/game/Sounds/Explosion-Song.wav")
-
 class Explosao:
     def __init__(self, position):
         self.frames = [
-            pygame.image.load(f"images/sprites/spritesBase/exp/explosion{i}.png").convert_alpha() 
+            pygame.image.load(f"SpaceWars/game/sprites/exp/explosion{i}.png").convert_alpha() 
             for i in range(1, 6)
         ]
         self.index = 0
