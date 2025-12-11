@@ -51,7 +51,7 @@ class Menu:
 
         # Fundo
         try:
-            self.background = pygame.image.load("images/backgrounds/background_menu.jpg").convert()
+            self.background = pygame.image.load("SpaceWars/game/background.jpg").convert()
             self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
             self.has_bg_image = True
         except pygame.error:
