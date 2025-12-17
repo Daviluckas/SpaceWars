@@ -50,11 +50,12 @@ nomes_vida = {
 }
 
 for vida, nome in nomes_vida.items():
-    caminho = os.path.join(script_dir, "sprites", "barra_de_vida", nome)
+    caminho = os.path.join(script_dir, "sprites", "barras_de_vida", nome) 
     try:
         img = pygame.image.load(caminho).convert_alpha()
         barra_vida_imgs[vida] = pygame.transform.scale(img, (150, 150))
-    except:
+    except Exception as e:
+        print(f"Erro ao carregar imagem de vida: {nome}. Erro: {e}")
         barra_vida_imgs[vida] = None
 
 class Entidade(pygame.sprite.Sprite):
