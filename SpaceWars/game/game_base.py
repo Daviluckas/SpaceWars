@@ -280,7 +280,7 @@ class BossVader(pygame.sprite.Sprite):
         self.vida = 20  
         self.velocidade = 1.0
         try:
-            img_path = os.path.join(script_dir, "sprites", "spacewars_naves", "boss_vader.png")
+            img_path = os.path.join(script_dir, "sprites", "spacewars_naves", "nave_darth_vader.png")
             img = pygame.image.load(img_path).convert_alpha()
             self.image = pygame.transform.scale(img, (220, 220))
         except Exception:
