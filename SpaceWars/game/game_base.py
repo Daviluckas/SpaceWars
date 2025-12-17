@@ -53,6 +53,7 @@ for vida, nome in nomes_vida.items():
     caminho = os.path.join(script_dir, "sprites", "barras_de_vida", nome)
     try:
         img = pygame.image.load(caminho).convert_alpha()
+        # mantém o tamanho original que você carregou (já estava sendo escalado para 150x150 ao carregar)
         barra_vida_imgs[vida] = pygame.transform.scale(img, (150, 150))
     except Exception as e:
         print(f"Erro ao carregar imagem de vida: {nome}. Erro: {e}")
@@ -343,7 +344,6 @@ def fade(screen, color=(0,0,0), mode='out', speed=8):
 def show_countdown(screen, start=3, color=(255,255,255), bg_color=(0,0,0)):
     clock_local = pygame.time.Clock()
 
-    # usar as fontes simples que estavam antes
     font_title = pygame.font.SysFont(None, 56, bold=True)
     font_big = pygame.font.SysFont(None, 140, bold=True)
     font_small = pygame.font.SysFont(None, 28)
@@ -390,6 +390,17 @@ def show_countdown(screen, start=3, color=(255,255,255), bg_color=(0,0,0)):
             pygame.display.flip()
             clock_local.tick(60)
     pygame.time.delay(300)
+
+def show_death_screen(screen, duration=1000):
+    overlay = pygame.Surface(screen.get_size())
+    overlay.fill((0,0,0))
+    font = pygame.font.SysFont(None, 72, bold=True)
+    txt = font.render("VOCÊ PERDEU", True, (255, 60, 60))
+    rect = txt.get_rect(center=(LARGURA//2, ALTURA//2))
+    screen.blit(overlay, (0,0))
+    screen.blit(txt, rect)
+    pygame.display.flip()
+    pygame.time.delay(duration)
 
 while rodando:
     clock.tick(FPS)
@@ -476,7 +487,7 @@ while rodando:
         if phase == 2:
             pontos = 0
             jogador.vida = 0
-            pygame.time.delay(500)
+            show_death_screen(TELA, duration=1000)
         else:
             jogador.vida -= len(hits)
 
@@ -512,16 +523,19 @@ while rodando:
     for explosao in explosoes:
         explosao.draw(TELA)
 
+    font = pygame.font.SysFont(None, 30)
+    texto_pontos = font.render(f"Pontos: {pontos}", True, (255, 255, 255))
+    TELA.blit(texto_pontos, (10, 10))
+
+    texto_vidas = font.render("Vidas:", True, (255, 255, 255))
+    y_vidas = 10 + texto_pontos.get_height() + 8  
+    TELA.blit(texto_vidas, (10, y_vidas))
+
     img_vida = barra_vida_imgs.get(jogador.vida)
     if img_vida:
-        TELA.blit(img_vida, (3, 10))
-
-    font = pygame.font.SysFont(None, 30)
-    texto = font.render(f"Vidas:", True, (255, 255, 255))
-    TELA.blit(texto, (30, 30))
-
-    texto = font.render(f"Pontos: {pontos}", True, (255, 255, 255))
-    TELA.blit(texto, (10, 10))
+        image_x = 10 + texto_vidas.get_width() + 8
+        image_y = y_vidas + (texto_vidas.get_height() - img_vida.get_height()) // 2
+        TELA.blit(img_vida, (image_x, image_y))
 
     font_small = pygame.font.SysFont(None, 24)
     fase_txt = "Fase 1" if phase == 1 else "Fase 2 - Boss"
