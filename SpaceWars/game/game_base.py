@@ -53,7 +53,6 @@ for vida, nome in nomes_vida.items():
     caminho = os.path.join(script_dir, "sprites", "barras_de_vida", nome)
     try:
         img = pygame.image.load(caminho).convert_alpha()
-        # mantém o tamanho original que você carregou (já estava sendo escalado para 150x150 ao carregar)
         barra_vida_imgs[vida] = pygame.transform.scale(img, (150, 150))
     except Exception as e:
         print(f"Erro ao carregar imagem de vida: {nome}. Erro: {e}")
@@ -263,48 +262,74 @@ class Robogiro(Robo):
         if self.rect.y > ALTURA + 50:
             self.kill()
 
+class BossTiro(pygame.sprite.Sprite):
+    def __init__(self, x, y, velocidade=5):
+        super().__init__()
+        self.image = pygame.Surface((10, 18), pygame.SRCALPHA)
+        self.image.fill((200, 50, 50))
+        self.rect = self.image.get_rect(center=(x, y))
+        self.velocidade = velocidade
+    def update(self):
+        self.rect.y += self.velocidade
+        if self.rect.y > ALTURA + 10:
+            self.kill()
+
 class BossVader(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.vida = 25
-        self.velocidade = 1.2
+        self.vida = 20  
+        self.velocidade = 1.0
         try:
             img_path = os.path.join(script_dir, "sprites", "spacewars_naves", "boss_vader.png")
             img = pygame.image.load(img_path).convert_alpha()
-            self.image = pygame.transform.scale(img, (180, 180))
+            self.image = pygame.transform.scale(img, (220, 220))
         except Exception:
-            self.image = pygame.Surface((180, 180))
+            self.image = pygame.Surface((220, 220))
             self.image.fill((120, 0, 0))
         self.rect = self.image.get_rect(center=(x, y))
-        self.direcao = 1
-        self.timer = 0
-        self.wait_before_descend = 120
-        self.descending = False
-
+        # modos:
+        self.approach = False   
+        self.active = False     
+        self.pos_target_y = 90
+        self.shoot_timer = 0
+        self.shoot_interval = 60 
+        self.descent_speed = 0.6  # velocidade mais lenta na descida
     def update(self):
-        self.timer += 1
-        self.rect.x += self.direcao * 2
-        if self.rect.left <= 0 or self.rect.right >= LARGURA:
-            self.direcao *= -1
-        if not self.descending:
-            if self.timer >= self.wait_before_descend:
-                self.descending = True
+        if self.approach:
+            # desce reto (sem zig-zag) até a posição alvo, lentamente
+            self.rect.y += self.descent_speed
+            if self.rect.y >= self.pos_target_y:
+                self.rect.y = self.pos_target_y
+                self.approach = False
+                self.active = True
+                self.shoot_timer = 0
+        elif self.active:
+            self.shoot_timer += 1
+            if self.shoot_timer >= self.shoot_interval:
+                self.shoot_timer = 0
+                t1 = BossTiro(self.rect.centerx - 30, self.rect.bottom + 10, velocidade=6)
+                t2 = BossTiro(self.rect.centerx + 30, self.rect.bottom + 10, velocidade=6)
+                todos_sprites.add(t1, t2)
+                enemy_tiros.add(t1, t2)
         else:
-            if self.rect.y < 100:
-                self.rect.y += 1
-
+            self.rect.x += math.cos(pygame.time.get_ticks() * 0.002) * 2
+            if self.rect.left < 0:
+                self.rect.left = 0
+            if self.rect.right > LARGURA:
+                self.rect.right = LARGURA
     def morreu(self, explosoes):
         explosoes.append(Explosao(self.rect.center))
-        for _ in range(5):
+        for _ in range(8):
             explosoes.append(Explosao((
-                self.rect.centerx + random.randint(-50,50),
-                self.rect.centery + random.randint(-50,50)
+                self.rect.centerx + random.randint(-80,80),
+                self.rect.centery + random.randint(-80,80)
             )))
         self.kill()
 
 todos_sprites = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
 tiros = pygame.sprite.Group()
+enemy_tiros = pygame.sprite.Group()
 
 jogador = Jogador(LARGURA // 2, ALTURA - 60)
 todos_sprites.add(jogador)
@@ -312,14 +337,22 @@ todos_sprites.add(jogador)
 phase = 1
 boss = None
 boss_spawned = False
+boss_active = False
+phase2_hard = False  
 boss_phase_start_time = 0
 player_life_at_boss_start = None
 boss_phase_won = False
 easter_unlock_possible = False
-BOSS_TRIGGER_POINTS = 40
+BOSS_TRIGGER_POINTS = 30
 
 pontos = 0
 spawn_timer = 0
+
+spawn_allowed = True
+boss_spawn_delay_started = False
+boss_spawn_start_time = 0
+BOSS_SPAWN_DELAY_MS = 5000  # 5 segundos
+player_can_shoot = True
 
 rodando = True
 
@@ -343,11 +376,9 @@ def fade(screen, color=(0,0,0), mode='out', speed=8):
 
 def show_countdown(screen, start=3, color=(255,255,255), bg_color=(0,0,0)):
     clock_local = pygame.time.Clock()
-
     font_title = pygame.font.SysFont(None, 56, bold=True)
     font_big = pygame.font.SysFont(None, 140, bold=True)
     font_small = pygame.font.SysFont(None, 28)
-
     msg_top = "VOCÊ CONSEGUIU"
     msg_bottom = "FASE 2"
     started_msg = pygame.time.get_ticks()
@@ -367,9 +398,7 @@ def show_countdown(screen, start=3, color=(255,255,255), bg_color=(0,0,0)):
         screen.blit(txt_bot, rect_bot)
         pygame.display.flip()
         clock_local.tick(60)
-
     pygame.time.delay(200)
-
     number_duration = 1200
     for n in range(start, 0, -1):
         started = pygame.time.get_ticks()
@@ -410,11 +439,13 @@ while rodando:
             rodando = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                tiro = Tiro(jogador.rect.centerx, jogador.rect.y)
-                todos_sprites.add(tiro)
-                tiros.add(tiro)
-                if som_tiro:
-                    som_tiro.play()
+                # só atira se player_can_shoot estiver True
+                if player_can_shoot:
+                    tiro = Tiro(jogador.rect.centerx, jogador.rect.y)
+                    todos_sprites.add(tiro)
+                    tiros.add(tiro)
+                    if som_tiro:
+                        som_tiro.play()
 
     spawn_timer += 1
 
@@ -429,18 +460,27 @@ while rodando:
             ent.kill()
         for t in tiros:
             t.kill()
+        for et in enemy_tiros:
+            et.kill()
 
+        # fase 2: pontos zerados, vida = 2 
         pontos = 0
-        jogador.vida = 5
+        jogador.vida = 2
         spawn_timer = 0
         phase = 2
         boss_phase_start_time = pygame.time.get_ticks()
         player_life_at_boss_start = jogador.vida
         boss_spawned = False
+        boss_active = False
+        phase2_hard = False
         boss_phase_won = False
         easter_unlock_possible = False
+        spawn_allowed = True
+        boss_spawn_delay_started = False
+        boss_spawn_start_time = 0
+        player_can_shoot = True
         fade(TELA, mode='in', speed=12)
-        print("Entrando na Fase 2: BOSS (Dark Vader)")
+        print("Entrando na Fase 2: jogador com 2 vidas, pontos zerados")
 
     if phase == 1:
         if spawn_timer > 40:
@@ -450,7 +490,8 @@ while rodando:
             inimigos.add(robo)
             spawn_timer = 0
     else:
-        if spawn_timer > 18:
+        spawn_threshold = 18 if not phase2_hard else 12
+        if spawn_allowed and spawn_timer > spawn_threshold and not boss_active:
             spawn_timer = 0
             if random.random() < 0.4:
                 side = random.choice(['left', 'right'])
@@ -465,14 +506,47 @@ while rodando:
                 robo = tipo(random.randint(40, LARGURA - 40), -40)
                 todos_sprites.add(robo)
                 inimigos.add(robo)
-        if not boss_spawned:
-            boss = BossVader(LARGURA // 2, -220)
-            todos_sprites.add(boss)
-            inimigos.add(boss)
-            boss_spawned = True
 
+        if not phase2_hard and pontos >= 20:
+            phase2_hard = True
+            print("Fase 2: dificuldade aumentada (mais robôs)")
+
+        if not boss_spawned and not boss_spawn_delay_started and pontos >= 15:
+            boss_spawn_delay_started = True
+            boss_spawn_start_time = pygame.time.get_ticks()
+            spawn_allowed = False  
+            player_can_shoot = True  
+            print("Pontos >=25: iniciado delay de 5s antes de spawn do boss")
+
+        if boss_spawn_delay_started and not boss_spawned:
+            elapsed = pygame.time.get_ticks() - boss_spawn_start_time
+            if elapsed >= BOSS_SPAWN_DELAY_MS:
+                boss = BossVader(LARGURA // 2, -300)
+                boss.approach = True
+                todos_sprites.add(boss)
+                inimigos.add(boss)
+                boss_spawned = True
+                boss_spawn_delay_started = False
+                player_can_shoot = False
+                print("Boss aparecendo: approach iniciado; jogador sem poder de atirar até boss ficar ativo")
+
+        # quando boss.active True, remover as naves menores e permitir o jogador atirar
+        if boss_spawned and boss is not None and boss.active and not boss_active:
+            # matar todas as naves exceto o boss
+            for ent in list(inimigos):
+                if ent is not boss:
+                    try:
+                        ent.kill()
+                    except:
+                        pass
+            boss_active = True
+            player_can_shoot = True
+            print("Boss ativo — outras naves removidas, jogador pode atirar")
+
+    # colisões entre tiros do jogador e inimigos
     colisao = pygame.sprite.groupcollide(inimigos, tiros, False, True)
     for robo, lista_tiros in colisao.items():
+        # contar somente os tiros que acertaram (cada tiro reduz 1 vida)
         robo.vida -= len(lista_tiros)
         if robo.vida <= 0:
             try:
@@ -482,24 +556,27 @@ while rodando:
                 robo.kill()
             pontos += 1
 
+    # colisões entre tiros inimigos (boss) e jogador
+    hits_bullets = pygame.sprite.spritecollide(jogador, enemy_tiros, True)
+    if hits_bullets:
+        jogador.vida -= len(hits_bullets)
+
+    # colisões jogador x inimigos (naves que batem)
     hits = pygame.sprite.spritecollide(jogador, inimigos, True)
     if hits:
-        if phase == 2:
-            pontos = 0
-            jogador.vida = 0
-            show_death_screen(TELA, duration=1000)
-        else:
-            jogador.vida -= len(hits)
+        jogador.vida -= len(hits)
 
+    # atualizar sprites e explosões
     todos_sprites.update()
     for explosao in explosoes[:]:
         explosao.update()
         if explosao.ended():
             explosoes.remove(explosao)
 
-    if phase == 2 and not boss_phase_won:
+    # checar vitória da fase 2: se boss morto volta pra fase 1
+    if phase == 2 and boss_spawned:
         boss_alive = any(isinstance(e, BossVader) for e in inimigos)
-        if (not boss_alive) and len(inimigos) == 0:
+        if not boss_alive:
             boss_phase_won = True
             if player_life_at_boss_start is not None and jogador.vida == player_life_at_boss_start:
                 easter_unlock_possible = True
@@ -509,8 +586,14 @@ while rodando:
             spawn_timer = 0
             boss = None
             boss_spawned = False
+            boss_active = False
+            phase2_hard = False
+            spawn_allowed = True
+            boss_spawn_delay_started = False
+            player_can_shoot = True
             print("Fase 2 vencida! easter_unlock_possible =", easter_unlock_possible)
 
+    # desenhar
     if background_img:
         TELA.blit(background_img, (0, 0))
     else:
@@ -523,12 +606,13 @@ while rodando:
     for explosao in explosoes:
         explosao.draw(TELA)
 
+    # HUD: pontos em cima; vidas abaixo com a imagem alinhada ao lado do texto "Vidas:"
     font = pygame.font.SysFont(None, 30)
     texto_pontos = font.render(f"Pontos: {pontos}", True, (255, 255, 255))
     TELA.blit(texto_pontos, (10, 10))
 
     texto_vidas = font.render("Vidas:", True, (255, 255, 255))
-    y_vidas = 10 + texto_pontos.get_height() + 8  
+    y_vidas = 10 + texto_pontos.get_height() + 8
     TELA.blit(texto_vidas, (10, y_vidas))
 
     img_vida = barra_vida_imgs.get(jogador.vida)
@@ -543,8 +627,10 @@ while rodando:
 
     pygame.display.flip()
 
+    # checar morte do jogador
     if jogador.vida <= 0:
-        pygame.time.delay(1000)
+        show_death_screen(TELA, duration=1000)
+        pygame.time.delay(200)
         rodando = False
 
 pygame.quit()
