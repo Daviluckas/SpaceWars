@@ -74,6 +74,7 @@ class Jogador(Entidade):
         super().__init__(x, y, 5)
         self.image.fill((0, 255, 0))
         self.vida = 5
+        self.velocidade = 8
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", "nave_jogador.png")
@@ -287,7 +288,6 @@ class BossVader(pygame.sprite.Sprite):
             self.image = pygame.Surface((220, 220))
             self.image.fill((120, 0, 0))
         self.rect = self.image.get_rect(center=(x, y))
-        # modos:
         self.approach = False   
         self.active = False     
         self.pos_target_y = 90
@@ -296,7 +296,7 @@ class BossVader(pygame.sprite.Sprite):
         self.descent_speed = 0.6  # velocidade mais lenta na descida
     def update(self):
         if self.approach:
-            # desce reto (sem zig-zag) até a posição alvo, lentamente
+            # desce reto (sem zig-zag) 
             self.rect.y += self.descent_speed
             if self.rect.y >= self.pos_target_y:
                 self.rect.y = self.pos_target_y
@@ -439,7 +439,6 @@ while rodando:
             rodando = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                # só atira se player_can_shoot estiver True
                 if player_can_shoot:
                     tiro = Tiro(jogador.rect.centerx, jogador.rect.y)
                     todos_sprites.add(tiro)
@@ -530,9 +529,7 @@ while rodando:
                 player_can_shoot = False
                 print("Boss aparecendo: approach iniciado; jogador sem poder de atirar até boss ficar ativo")
 
-        # quando boss.active True, remover as naves menores e permitir o jogador atirar
         if boss_spawned and boss is not None and boss.active and not boss_active:
-            # matar todas as naves exceto o boss
             for ent in list(inimigos):
                 if ent is not boss:
                     try:
@@ -543,10 +540,8 @@ while rodando:
             player_can_shoot = True
             print("Boss ativo — outras naves removidas, jogador pode atirar")
 
-    # colisões entre tiros do jogador e inimigos
     colisao = pygame.sprite.groupcollide(inimigos, tiros, False, True)
     for robo, lista_tiros in colisao.items():
-        # contar somente os tiros que acertaram (cada tiro reduz 1 vida)
         robo.vida -= len(lista_tiros)
         if robo.vida <= 0:
             try:
@@ -556,12 +551,10 @@ while rodando:
                 robo.kill()
             pontos += 1
 
-    # colisões entre tiros inimigos (boss) e jogador
     hits_bullets = pygame.sprite.spritecollide(jogador, enemy_tiros, True)
     if hits_bullets:
         jogador.vida -= len(hits_bullets)
 
-    # colisões jogador x inimigos (naves que batem)
     hits = pygame.sprite.spritecollide(jogador, inimigos, True)
     if hits:
         jogador.vida -= len(hits)
@@ -573,7 +566,6 @@ while rodando:
         if explosao.ended():
             explosoes.remove(explosao)
 
-    # checar vitória da fase 2: se boss morto volta pra fase 1
     if phase == 2 and boss_spawned:
         boss_alive = any(isinstance(e, BossVader) for e in inimigos)
         if not boss_alive:
@@ -593,7 +585,6 @@ while rodando:
             player_can_shoot = True
             print("Fase 2 vencida! easter_unlock_possible =", easter_unlock_possible)
 
-    # desenhar
     if background_img:
         TELA.blit(background_img, (0, 0))
     else:
@@ -606,7 +597,6 @@ while rodando:
     for explosao in explosoes:
         explosao.draw(TELA)
 
-    # HUD: pontos em cima; vidas abaixo com a imagem alinhada ao lado do texto "Vidas:"
     font = pygame.font.SysFont(None, 30)
     texto_pontos = font.render(f"Pontos: {pontos}", True, (255, 255, 255))
     TELA.blit(texto_pontos, (10, 10))
