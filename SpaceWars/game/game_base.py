@@ -50,7 +50,7 @@ nomes_vida = {
 }
 
 for vida, nome in nomes_vida.items():
-    caminho = os.path.join(script_dir, "sprites", "barras_de_vida", nome) 
+    caminho = os.path.join(script_dir, "sprites", "barras_de_vida", nome)
     try:
         img = pygame.image.load(caminho).convert_alpha()
         barra_vida_imgs[vida] = pygame.transform.scale(img, (150, 150))
@@ -342,10 +342,16 @@ def fade(screen, color=(0,0,0), mode='out', speed=8):
 
 def show_countdown(screen, start=3, color=(255,255,255), bg_color=(0,0,0)):
     clock_local = pygame.time.Clock()
-    font_msg = pygame.font.SysFont(None, 56, bold=True)
-    msg = "VOCÊ CONSEGUIU! FASE 2"
+
+    # usar as fontes simples que estavam antes
+    font_title = pygame.font.SysFont(None, 56, bold=True)
+    font_big = pygame.font.SysFont(None, 140, bold=True)
+    font_small = pygame.font.SysFont(None, 28)
+
+    msg_top = "VOCÊ CONSEGUIU"
+    msg_bottom = "FASE 2"
     started_msg = pygame.time.get_ticks()
-    while (pygame.time.get_ticks() - started_msg) < 2000:
+    while (pygame.time.get_ticks() - started_msg) < 2200:
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 pygame.quit()
@@ -353,31 +359,35 @@ def show_countdown(screen, start=3, color=(255,255,255), bg_color=(0,0,0)):
         overlay = pygame.Surface(screen.get_size())
         overlay.fill(bg_color)
         screen.blit(overlay, (0,0))
-        txt_msg = font_msg.render(msg, True, color)
-        rect_msg = txt_msg.get_rect(center=(LARGURA//2, ALTURA//2 - 60))
-        screen.blit(txt_msg, rect_msg)
+        txt_top = font_title.render(msg_top, True, color)
+        rect_top = txt_top.get_rect(center=(LARGURA//2, ALTURA//2 - 80))
+        screen.blit(txt_top, rect_top)
+        txt_bot = font_big.render(msg_bottom, True, color)
+        rect_bot = txt_bot.get_rect(center=(LARGURA//2, ALTURA//2 + 20))
+        screen.blit(txt_bot, rect_bot)
         pygame.display.flip()
         clock_local.tick(60)
 
-    font_num = pygame.font.SysFont(None, 120, bold=True)
+    pygame.time.delay(200)
+
     number_duration = 1200
     for n in range(start, 0, -1):
         started = pygame.time.get_ticks()
-        overlay = pygame.Surface(screen.get_size())
-        overlay.fill(bg_color)
-        screen.blit(overlay, (0,0))
-        txt_msg = font_msg.render("PRONTO?", True, color)
-        rect_msg = txt_msg.get_rect(center=(LARGURA//2, ALTURA//2 - 120))
-        screen.blit(txt_msg, rect_msg)
-        txt = font_num.render(str(n), True, color)
-        rect = txt.get_rect(center=(LARGURA//2, ALTURA//2))
-        screen.blit(txt, rect)
-        pygame.display.flip()
         while (pygame.time.get_ticks() - started) < number_duration:
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
                     pygame.quit()
                     raise SystemExit()
+            overlay = pygame.Surface(screen.get_size())
+            overlay.fill(bg_color)
+            screen.blit(overlay, (0,0))
+            hint = font_title.render("PRONTO?", True, color)
+            rect_hint = hint.get_rect(center=(LARGURA//2, ALTURA//2 - 120))
+            screen.blit(hint, rect_hint)
+            numtxt = font_big.render(str(n), True, color)
+            rect_num = numtxt.get_rect(center=(LARGURA//2, ALTURA//2))
+            screen.blit(numtxt, rect_num)
+            pygame.display.flip()
             clock_local.tick(60)
     pygame.time.delay(300)
 
@@ -403,10 +413,14 @@ while rodando:
             show_countdown(TELA, start=3)
         except Exception:
             pass
+
         for ent in inimigos:
             ent.kill()
         for t in tiros:
             t.kill()
+
+        pontos = 0
+        jogador.vida = 5
         spawn_timer = 0
         phase = 2
         boss_phase_start_time = pygame.time.get_ticks()
@@ -459,7 +473,12 @@ while rodando:
 
     hits = pygame.sprite.spritecollide(jogador, inimigos, True)
     if hits:
-        jogador.vida -= len(hits)
+        if phase == 2:
+            pontos = 0
+            jogador.vida = 0
+            pygame.time.delay(500)
+        else:
+            jogador.vida -= len(hits)
 
     todos_sprites.update()
     for explosao in explosoes[:]:
