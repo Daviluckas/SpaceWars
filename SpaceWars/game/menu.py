@@ -5,6 +5,32 @@ import os
 import subprocess
 
 
+def play_intro(screen, fps=30):
+    clock = pygame.time.Clock()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    intro_dir = os.path.join(script_dir, "intro")
+
+    frames = sorted(
+        f for f in os.listdir(intro_dir) if f.endswith(".png")
+    )
+
+    for frame_name in frames:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                return
+
+        frame_path = os.path.join(intro_dir, frame_name)
+        frame = pygame.image.load(frame_path).convert()
+        frame = pygame.transform.scale(frame, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        screen.blit(frame, (0, 0))
+        pygame.display.flip()
+        clock.tick(fps)
+
+
 pygame.init()
 pygame.mixer.init() 
 
@@ -89,9 +115,13 @@ class Menu:
 
     def start_game(self):
         print("Iniciando Space Wars...")
-        pygame.mixer.music.stop() #musica para qnd abre jgo
+        pygame.mixer.music.stop()
+
+        play_intro(self.screen)  # 🎬 intro aqui
+
         self.launch_game = True
-        self.running = False 
+        self.running = False
+
 
     def exit_game(self):
         pygame.mixer.music.stop()
