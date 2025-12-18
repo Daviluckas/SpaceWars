@@ -84,7 +84,7 @@ class PowerUp(pygame.sprite.Sprite):
 
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(img, (40, 40))
+            self.image = pygame.transform.scale(img, (80, 80))
         except Exception as e:
             print("ERRO AO CARREGAR POWERUP:", caminho_img)
             print(e)
@@ -465,7 +465,7 @@ while rodando:
             spawn_timer = 0
             robo = random.choice([RoboZigueZague, Robogiro, RoboCacador, RoboSaltador, RoboLento, RoboRapido])(random.randint(40, LARGURA - 40), -40)
             todos_sprites.add(robo); inimigos.add(robo)
-        if not boss_spawned and not boss_spawn_delay_started and pontos >= 10:
+        if not boss_spawned and not boss_spawn_delay_started and pontos >= 60:
             boss_spawn_delay_started = True
             boss_spawn_start_time = pygame.time.get_ticks()
             spawn_allowed = False
@@ -505,7 +505,7 @@ while rodando:
     hits_pu = pygame.sprite.spritecollide(jogador, powerups, True)
     for pu in hits_pu:
         if pu.tipo == 'tiro': jogador.tiro_triplo = True
-        elif pu.tipo == 'velocidade': jogador.velocidade = 30
+        elif pu.tipo == 'velocidade': jogador.velocidade = 15
         elif pu.tipo == 'vida':
             if jogador.vida < 5: jogador.vida += 1
 
@@ -571,7 +571,7 @@ while rodando:
     
     font = pygame.font.SysFont(None, 30)
     TELA.blit(font.render(f"Pontos: {pontos}", True, (255, 255, 255)), (10, 10))
-    TELA.blit(font.render("Vidas:", True, (255, 255, 255)), (10, 40))
+    TELA.blit(font.render("", True, (255, 255, 255)), (10, 40))
     if barra_vida_imgs.get(jogador.vida): TELA.blit(barra_vida_imgs[jogador.vida], (70, -15))
     
     pygame.display.flip()

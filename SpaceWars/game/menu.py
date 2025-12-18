@@ -30,7 +30,6 @@ def play_intro_video(screen):
 
         screen.blit(frame, (0, 0))
         pygame.display.flip()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 cap.release()
