@@ -296,7 +296,7 @@ class BossVader(pygame.sprite.Sprite):
         self.pos_target_y = 90
         self.shoot_timer = 0
         self.shoot_interval = 60 
-        self.descent_speed = 0.6
+        self.descent_speed = 2.0
     def update(self):
         if self.approach:
             self.rect.y += self.descent_speed
@@ -388,14 +388,14 @@ boss_spawned = boss_active = False
 spawn_allowed = player_can_shoot = True
 boss_spawn_delay_started = False
 BOSS_TRIGGER_POINTS = 30
-BOSS_SPAWN_DELAY_MS = 5000
+BOSS_SPAWN_DELAY_MS = 2000
 rodando = True
 
 while rodando:
     clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT: rodando = False
-
+        
     spawn_timer += 1
     if phase == 1 and pontos >= BOSS_TRIGGER_POINTS and jogador.vida > 0:
         fade(TELA, mode='out', speed=12)
@@ -403,7 +403,8 @@ while rodando:
         for ent in inimigos: ent.kill()
         for t in tiros: t.kill()
         for et in enemy_tiros: et.kill()
-        pontos, jogador.vida, phase = 0, 2, 2
+        pontos, jogador.vida, phase = 0, 3, 2
+        jogador.tiro_triplo = True
         boss_spawned = boss_active = False
         spawn_allowed = player_can_shoot = True
         fade(TELA, mode='in', speed=12)
@@ -419,10 +420,14 @@ while rodando:
             spawn_timer = 0
             robo = random.choice([RoboZigueZague, Robogiro, RoboCacador, RoboSaltador, RoboLento, RoboRapido])(random.randint(40, LARGURA - 40), -40)
             todos_sprites.add(robo); inimigos.add(robo)
-        if not boss_spawned and not boss_spawn_delay_started and pontos >= 15:
+        if not boss_spawned and not boss_spawn_delay_started and pontos >= 60:
             boss_spawn_delay_started = True
             boss_spawn_start_time = pygame.time.get_ticks()
             spawn_allowed = False
+            for ent in list(inimigos):
+                explosoes.append(Explosao(ent.rect.center))
+                ent.kill()
+
         if boss_spawn_delay_started and not boss_spawned:
             if pygame.time.get_ticks() - boss_spawn_start_time >= BOSS_SPAWN_DELAY_MS:
                 boss = BossVader(LARGURA // 2, -300)
@@ -455,7 +460,7 @@ while rodando:
             try: robo.morreu(explosoes)
             except: explosoes.append(Explosao(robo.rect.center)); robo.kill()
             pontos += 1
-    
+
     if pygame.sprite.spritecollide(jogador, enemy_tiros, True) or pygame.sprite.spritecollide(jogador, inimigos, True):
         jogador.vida -= 1
 
