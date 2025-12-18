@@ -68,18 +68,29 @@ class PowerUp(pygame.sprite.Sprite):
         super().__init__()
         self.tipo = tipo
         self.velocidade = 3
+
         caminhos = {
             'tiro': "powerup_tiro3x.png",
             'velocidade': "powerup_velocidade.png",
             'vida': "powerup_vidaextra.png"
         }
-        caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", caminhos[tipo])
+
+        caminho_img = os.path.join(
+            script_dir,
+            "sprites",
+            "powerups",
+            caminhos[tipo]
+        )
+
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
             self.image = pygame.transform.scale(img, (40, 40))
-        except:
-            self.image = pygame.Surface((30, 30))
-            self.image.fill((255, 255, 255))
+        except Exception as e:
+            print("ERRO AO CARREGAR POWERUP:", caminho_img)
+            print(e)
+            self.image = pygame.Surface((40, 40), pygame.SRCALPHA)
+            self.image.fill((255, 0, 255)) 
+
         self.rect = self.image.get_rect(center=(x, y))
 
     def update(self):
@@ -454,7 +465,7 @@ while rodando:
             spawn_timer = 0
             robo = random.choice([RoboZigueZague, Robogiro, RoboCacador, RoboSaltador, RoboLento, RoboRapido])(random.randint(40, LARGURA - 40), -40)
             todos_sprites.add(robo); inimigos.add(robo)
-        if not boss_spawned and not boss_spawn_delay_started and pontos >= 60:
+        if not boss_spawned and not boss_spawn_delay_started and pontos >= 10:
             boss_spawn_delay_started = True
             boss_spawn_start_time = pygame.time.get_ticks()
             spawn_allowed = False
@@ -485,7 +496,7 @@ while rodando:
                 musica_atual = "music_darthvader"
 
         if boss_active and random.randint(1, 150) == 1:
-            pu = PowerUp(random.randint(50, LARGURA-50), -40, random.choice(['tiro', 'velocidade', 'vida']))
+            pu = PowerUp(random.randint(40, LARGURA-40), -40, random.choice(['tiro', 'velocidade', 'vida']))
             powerups.add(pu)
 
     todos_sprites.update()
@@ -494,7 +505,7 @@ while rodando:
     hits_pu = pygame.sprite.spritecollide(jogador, powerups, True)
     for pu in hits_pu:
         if pu.tipo == 'tiro': jogador.tiro_triplo = True
-        elif pu.tipo == 'velocidade': jogador.velocidade = 10
+        elif pu.tipo == 'velocidade': jogador.velocidade = 30
         elif pu.tipo == 'vida':
             if jogador.vida < 5: jogador.vida += 1
 
