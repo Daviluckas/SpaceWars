@@ -505,7 +505,7 @@ while rodando:
     hits_pu = pygame.sprite.spritecollide(jogador, powerups, True)
     for pu in hits_pu:
         if pu.tipo == 'tiro': jogador.tiro_triplo = True
-        elif pu.tipo == 'velocidade': jogador.velocidade = 15
+        elif pu.tipo == 'velocidade': jogador.velocidade = 12
         elif pu.tipo == 'vida':
             if jogador.vida < 5: jogador.vida += 1
 
