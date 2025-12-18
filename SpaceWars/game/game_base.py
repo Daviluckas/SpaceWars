@@ -1,3 +1,6 @@
+import subprocess
+import sys
+import os
 import pygame
 import random
 import math
@@ -281,7 +284,7 @@ class BossTiro(pygame.sprite.Sprite):
 class BossVader(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.vida = 20  
+        self.vida = 80  
         self.velocidade = 1.0
         try:
             img_path = os.path.join(script_dir, "sprites", "spacewars_naves", "nave_darth_vader.png")
@@ -372,6 +375,33 @@ def show_death_screen(screen, duration=1000):
     screen.blit(txt, txt.get_rect(center=(LARGURA//2, ALTURA//2)))
     pygame.display.flip()
     pygame.time.delay(duration)
+    
+def close_circle_wipe(screen, speed=12):
+    center_x, center_y = LARGURA // 2, ALTURA // 2
+    radius = int(math.hypot(LARGURA / 2, ALTURA / 2)) 
+
+    while radius > 0:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+        
+        temp_surface = pygame.Surface((LARGURA, ALTURA))
+        temp_surface.fill((0, 0, 0)) # Fundo preto
+        
+        pygame.draw.circle(temp_surface, (255, 255, 255), (center_x, center_y), radius)
+        temp_surface.set_colorkey((255, 255, 255)) 
+        
+        if background_img: screen.blit(background_img, (0, 0))
+        else: screen.fill((30, 10, 30))
+        
+        screen.blit(temp_surface, (0, 0))
+        
+        radius -= speed
+        pygame.display.flip()
+        clock.tick(60)
+    
+    screen.fill((0, 0, 0))
+    pygame.display.flip()
 
 todos_sprites = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
@@ -454,12 +484,44 @@ while rodando:
             if jogador.vida < 5: jogador.vida += 1
 
     colisao = pygame.sprite.groupcollide(inimigos, tiros, False, True)
+    
     for robo, lista_tiros in colisao.items():
-        robo.vida -= len(lista_tiros)
-        if robo.vida <= 0:
-            try: robo.morreu(explosoes)
-            except: explosoes.append(Explosao(robo.rect.center)); robo.kill()
-            pontos += 1
+        qtd_acertos = len(lista_tiros)
+        if isinstance(robo, BossVader):
+            pontos += qtd_acertos
+            robo.vida -= qtd_acertos
+            
+            if pontos >= 150:
+                robo.morreu(explosoes)
+                tempo_inicio = pygame.time.get_ticks()
+                while pygame.time.get_ticks() - tempo_inicio < 2000:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+                    
+                    if background_img: TELA.blit(background_img, (0, 0))
+                    else: TELA.fill((30, 10, 30))
+        
+                    for exp in explosoes[:]:
+                        exp.update()
+                        exp.draw(TELA)
+                    TELA.blit(font.render(f"Pontos: {pontos}", True, (255, 255, 255)), (10, 10))
+                    
+                    pygame.display.flip()
+                    clock.tick(60)
+
+                close_circle_wipe(TELA, speed=15)
+                pygame.mixer.music.stop()
+                pygame.quit()
+                import subprocess, sys
+                caminho_ee = os.path.join(script_dir, "easter_egg.py")
+                subprocess.Popen([sys.executable, caminho_ee])
+                sys.exit()
+
+        else:
+            robo.vida -= qtd_acertos
+            if robo.vida <= 0:
+                robo.morreu(explosoes)
+                pontos += 1
 
     if pygame.sprite.spritecollide(jogador, enemy_tiros, True) or pygame.sprite.spritecollide(jogador, inimigos, True):
         jogador.vida -= 1
