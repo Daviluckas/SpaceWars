@@ -42,6 +42,10 @@ try:
 except:
     pass
 
+caminho_musica_boss = os.path.join(script_dir, "Sounds", "music_darthvader.wav")
+musica_atual = "bg"
+
+
 caminho_tiro_img = os.path.join(script_dir, "sprites", "spacewars_naves", "tiro.png")
 try:
     tiro_sprite = pygame.image.load(caminho_tiro_img).convert_alpha()
@@ -467,8 +471,19 @@ while rodando:
                 boss_spawn_delay_started = False
         if boss_spawned and boss.active and not boss_active:
             for ent in list(inimigos):
-                if ent is not boss: ent.kill()
-            boss_active, player_can_shoot = True, True
+                if ent is not boss:
+                    ent.kill()
+
+            boss_active = True
+            player_can_shoot = True
+
+            if musica_atual != "boss":
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load(caminho_musica_boss)
+                pygame.mixer.music.set_volume(0.4)
+                pygame.mixer.music.play(-1)
+                musica_atual = "music_darthvader"
+
         if boss_active and random.randint(1, 150) == 1:
             pu = PowerUp(random.randint(50, LARGURA-50), -40, random.choice(['tiro', 'velocidade', 'vida']))
             powerups.add(pu)
