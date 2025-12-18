@@ -66,11 +66,11 @@ class Menu:
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-        music_path = os.path.join(script_dir, "Sounds", "msc_starwars.mp3") #msc carrega
+        music_path = os.path.join(script_dir, "Sounds", "msc_starwars.mp3") 
         try:
             pygame.mixer.music.load(music_path)
-            pygame.mixer.music.set_volume(1.0) # Volume
-            pygame.mixer.music.play(-1)        # -1 música toca em loop infinito
+            pygame.mixer.music.set_volume(1.0) 
+            pygame.mixer.music.play(-1)        
         except Exception as e:
             print(f"Erro ao carregar música: {e}")
 
@@ -117,7 +117,7 @@ class Menu:
         print("Iniciando Space Wars...")
         pygame.mixer.music.stop()
 
-        play_intro(self.screen)  # 🎬 intro aqui
+        play_intro(self.screen) 
 
         self.launch_game = True
         self.running = False
