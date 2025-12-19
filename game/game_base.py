@@ -465,7 +465,7 @@ while rodando:
             spawn_timer = 0
             robo = random.choice([RoboZigueZague, Robogiro, RoboCacador, RoboSaltador, RoboLento, RoboRapido])(random.randint(40, LARGURA - 40), -40)
             todos_sprites.add(robo); inimigos.add(robo)
-        if not boss_spawned and not boss_spawn_delay_started and pontos >= 10:
+        if not boss_spawned and not boss_spawn_delay_started and pontos >= 60:
             boss_spawn_delay_started = True
             boss_spawn_start_time = pygame.time.get_ticks()
             spawn_allowed = False
@@ -505,7 +505,7 @@ while rodando:
     hits_pu = pygame.sprite.spritecollide(jogador, powerups, True)
     for pu in hits_pu:
         if pu.tipo == 'tiro': jogador.tiro_triplo = True
-        elif pu.tipo == 'velocidade': jogador.velocidade = 30
+        elif pu.tipo == 'velocidade': jogador.velocidade = 15
         elif pu.tipo == 'vida':
             if jogador.vida < 5: jogador.vida += 1
 
@@ -517,7 +517,7 @@ while rodando:
             pontos += qtd_acertos
             robo.vida -= qtd_acertos
             
-            if pontos >= 150:
+            if pontos >= 200:
                 robo.morreu(explosoes)
                 tempo_inicio = pygame.time.get_ticks()
                 while pygame.time.get_ticks() - tempo_inicio < 2000:
@@ -563,7 +563,7 @@ while rodando:
         jogador.velocidade = 8
 
     if background_img: TELA.blit(background_img, (0, 0))
-    else: TELA.fill((30, 10, 30) if phase == 2 else (20, 20, 20))
+    else: TELA.fill(70, 10, 70) if phase == 2 else (20, 20, 20)
     
     todos_sprites.draw(TELA)
     powerups.draw(TELA)
