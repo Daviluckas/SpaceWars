@@ -2,6 +2,7 @@
 ### Um projeto acadêmico inspirado em Space Invaders com sátira ao universo Star Wars
 
 para rodar o jogo instale o pygame: pip install pygame
+
 dentro do arquivo use: pip install opencv-python-headless
 
 
