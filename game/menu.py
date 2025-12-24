@@ -47,8 +47,8 @@ def play_intro_video(screen):
 pygame.init()
 pygame.mixer.init() 
 
-SCREEN_WIDTH = 900      
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1280      
+SCREEN_HEIGHT = 720
 FPS = 60
 
 WHITE = (255, 255, 255)

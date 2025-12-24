@@ -8,8 +8,8 @@ pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
 pygame.mixer.init()
 
-LARGURA = 800
-ALTURA = 600
+LARGURA = 1280
+ALTURA = 720
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Space Wars - O Lado Sombrio")
 

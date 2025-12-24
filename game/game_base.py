@@ -10,8 +10,8 @@ from Explosion import Explosao
 pygame.init()
 pygame.mixer.init()
 
-LARGURA = 800
-ALTURA = 600
+LARGURA = 1280
+ALTURA = 720
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Robot Defense - Space Wars")
 
@@ -118,7 +118,7 @@ class Jogador(Entidade):
         caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", "nave_jogador.png")
         try:
             imagem_original = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(imagem_original, (70, 70))
+            self.image = pygame.transform.scale(imagem_original, (100, 100))
             self.rect = self.image.get_rect(center=(x, y))
         except:
             self.image.fill((255, 0, 0))
@@ -178,7 +178,7 @@ class RoboZigueZague(Robo):
         caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", "roboZiguezague.png")
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(img, (100, 100))
+            self.image = pygame.transform.scale(img, (200, 200))
             self.rect = self.image.get_rect(center=(x, y))
         except: self.image.fill((255, 0, 0))
     def atualizar_posicao(self):
@@ -196,7 +196,7 @@ class RoboLento(Robo):
         caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", "roboLento.png")
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(img, (100, 100))
+            self.image = pygame.transform.scale(img, (200, 200))
             self.rect = self.image.get_rect(center=(x, y))
         except: self.image.fill((0, 255, 0))
     def atualizar_posicao(self): self.rect.y += self.velocidade
@@ -212,7 +212,7 @@ class RoboSaltador(Robo):
         caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", "roboSaltador.png")
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(img, (100, 100))
+            self.image = pygame.transform.scale(img, (200, 200))
             self.rect = self.image.get_rect(center=(x, y))
         except: self.image.fill((230, 255, 0))
     def atualizar_posicao(self):
@@ -232,7 +232,7 @@ class RoboRapido(Robo):
         caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", "roboRapido.png")
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(img, (100, 100))
+            self.image = pygame.transform.scale(img, (200, 200))
             self.rect = self.image.get_rect(center=(x, y))
         except: self.image.fill((0,255,0))
     def atualizar_posicao(self): self.rect.y += self.velocidade
@@ -247,7 +247,7 @@ class RoboCacador(Robo):
         caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", "roboCacador.png")
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(img, (100, 100))
+            self.image = pygame.transform.scale(img, (200, 200))
             self.rect = self.image.get_rect(center=(x, y))
         except: self.image.fill((0,0,255))
     def atualizar_posicao(self, nave):
@@ -270,7 +270,7 @@ class Robogiro(Robo):
         caminho_img = os.path.join(script_dir, "sprites", "spacewars_naves", "roboCiclico.png")
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(img, (100, 100))
+            self.image = pygame.transform.scale(img, (200, 200))
             self.rect = self.image.get_rect(center=(x, y))
         except: self.image.fill((230, 255, 0))
         self.angulo = 0
