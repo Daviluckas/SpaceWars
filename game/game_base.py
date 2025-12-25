@@ -84,7 +84,7 @@ class PowerUp(pygame.sprite.Sprite):
 
         try:
             img = pygame.image.load(caminho_img).convert_alpha()
-            self.image = pygame.transform.scale(img, (40, 40))
+            self.image = pygame.transform.scale(img, (96, 96))
         except Exception as e:
             print("ERRO AO CARREGAR POWERUP:", caminho_img)
             print(e)
@@ -465,7 +465,7 @@ while rodando:
             spawn_timer = 0
             robo = random.choice([RoboZigueZague, Robogiro, RoboCacador, RoboSaltador, RoboLento, RoboRapido])(random.randint(40, LARGURA - 40), -40)
             todos_sprites.add(robo); inimigos.add(robo)
-        if not boss_spawned and not boss_spawn_delay_started and pontos >= 60:
+        if not boss_spawned and not boss_spawn_delay_started and pontos >= 75:
             boss_spawn_delay_started = True
             boss_spawn_start_time = pygame.time.get_ticks()
             spawn_allowed = False
